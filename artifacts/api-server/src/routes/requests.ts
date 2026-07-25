@@ -61,10 +61,11 @@ router.get("/requests", requireAuth, async (req, res) => {
   // Role-based filtering
   const { role, userId } = req.user!;
   if (role === "student" || role === "staff") {
+    // Students/staff only see requests they submitted
     conditions.push(eq(serviceRequestsTable.submittedBy, userId));
-  } else if (role === "maintenance_officer") {
-    conditions.push(eq(serviceRequestsTable.assignedTo, userId));
   }
+  // maintenance_officer and admin see all requests (officers need visibility of pending
+  // requests so they know what work is available, not just what's assigned to them)
 
   if (status) conditions.push(eq(serviceRequestsTable.status, status as any));
   if (priority) conditions.push(eq(serviceRequestsTable.priority, priority as any));

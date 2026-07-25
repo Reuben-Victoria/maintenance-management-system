@@ -244,7 +244,7 @@ export default function RequestDetail() {
                 </p>
               )}
 
-              {isOfficerOrAdmin && (
+              {user?.role === "admin" && (
                 <form onSubmit={(e) => {
                   e.preventDefault();
                   if (!assignOfficerId) return;

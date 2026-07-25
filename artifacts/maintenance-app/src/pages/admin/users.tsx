@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useListUsers, useUpdateUser, useDeleteUser, useGetUser, ListUsersRole, UserRole } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,10 @@ export default function AdminUsers() {
   const [roleFilter, setRoleFilter] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  import("react").then(React => {
-    React.useEffect(() => {
-      const timer = setTimeout(() => setDebouncedSearch(search), 500);
-      return () => clearTimeout(timer);
-    }, [search]);
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const queryParams: any = { page, limit: 20, search: debouncedSearch || undefined };
   if (roleFilter) queryParams.role = roleFilter;
