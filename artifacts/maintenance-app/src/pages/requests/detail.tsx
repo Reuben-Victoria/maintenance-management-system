@@ -34,15 +34,18 @@ export default function RequestDetail() {
   const queryClient = useQueryClient();
 
   const { data: request, isLoading } = useGetRequest(id, {
-    query: { enabled: !!id }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { enabled: !!id } as any,
   });
 
   const { data: logs, isLoading: loadingLogs } = useGetRequestLogs(id, {
-    query: { enabled: !!id }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { enabled: !!id } as any,
   });
 
   const { data: officers } = useListOfficers({
-    query: { enabled: !!user && (user.role === "admin" || user.role === "maintenance_officer") }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { enabled: !!user && (user.role === "admin" || user.role === "maintenance_officer") } as any,
   });
 
   const [newStatus, setNewStatus] = useState<ServiceRequestDetailStatus | "">("");
@@ -78,7 +81,7 @@ export default function RequestDetail() {
         queryClient.invalidateQueries({ queryKey: getGetRequestLogsQueryKey(id) });
       },
       onError: (err) =>
-        toast({ title: "Failed to update status", description: err.data?.error, variant: "destructive" })
+        toast({ title: "Failed to update status", description: (err as any).data?.error, variant: "destructive" })
     }
   });
 
@@ -91,7 +94,7 @@ export default function RequestDetail() {
         queryClient.invalidateQueries({ queryKey: getGetRequestQueryKey(id) });
       },
       onError: (err) =>
-        toast({ title: "Failed to assign", description: err.data?.error, variant: "destructive" })
+        toast({ title: "Failed to assign", description: (err as any).data?.error, variant: "destructive" })
     }
   });
 

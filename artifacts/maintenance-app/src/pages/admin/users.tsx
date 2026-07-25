@@ -29,25 +29,27 @@ export default function AdminUsers() {
   if (roleFilter) queryParams.role = roleFilter;
 
   const { data, isLoading, refetch } = useListUsers(queryParams, {
-    query: { keepPreviousData: true }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { placeholderData: (prev: any) => prev } as any,
   });
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const { data: userDetails } = useGetUser(editingId || 0, {
-    query: { enabled: !!editingId }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { enabled: !!editingId } as any,
   });
 
   const updateMutation = useUpdateUser({
     mutation: {
       onSuccess: () => { toast({ title: "User updated" }); refetch(); },
-      onError: (err) => toast({ title: "Update failed", description: err.data?.error, variant: "destructive" })
+      onError: (err) => toast({ title: "Update failed", description: (err as any).data?.error, variant: "destructive" })
     }
   });
 
   const deleteMutation = useDeleteUser({
     mutation: {
       onSuccess: () => { toast({ title: "User deleted" }); refetch(); },
-      onError: (err) => toast({ title: "Delete failed", description: err.data?.error, variant: "destructive" })
+      onError: (err) => toast({ title: "Delete failed", description: (err as any).data?.error, variant: "destructive" })
     }
   });
 

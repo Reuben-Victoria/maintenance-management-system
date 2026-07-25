@@ -26,12 +26,15 @@ export default function Dashboard() {
   const { user } = useAuth();
 
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary({
-    query: { refetchInterval: 30000 }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { refetchInterval: 30000 } as any,
   });
 
+  // First arg = query params (limit), second arg = hook options (refetchInterval)
   const { data: activities, isLoading: loadingActivity } = useGetRecentActivity(
-    { query: { refetchInterval: 30000 } },
-    { query: { limit: 5 } }
+    { limit: 5 } as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    { query: { refetchInterval: 30000 } as any },
   );
 
   if (loadingSummary || !summary) {

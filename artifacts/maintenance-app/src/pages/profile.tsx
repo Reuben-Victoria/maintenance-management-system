@@ -36,7 +36,7 @@ export default function Profile() {
         toast({ title: "Profile updated successfully!" });
       },
       onError: (err) => {
-        toast({ title: "Update failed", description: err.data?.error, variant: "destructive" });
+        toast({ title: "Update failed", description: (err as any).data?.error, variant: "destructive" });
       }
     }
   });

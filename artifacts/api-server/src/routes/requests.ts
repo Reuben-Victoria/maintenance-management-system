@@ -12,7 +12,7 @@ import { requireAuth, requireRole } from "../middlewares/auth";
 
 const router = Router();
 
-// Helper: build a service request row with joined names
+// Helper: build a service request row with joined names and submitter email
 async function getRequestRow(id: number) {
   const result = await db
     .select({
@@ -27,6 +27,7 @@ async function getRequestRow(id: number) {
       evidenceUrl: serviceRequestsTable.evidenceUrl,
       submittedBy: serviceRequestsTable.submittedBy,
       submitterName: usersTable.name,
+      submitterEmail: usersTable.email,
       assignedTo: serviceRequestsTable.assignedTo,
       createdAt: serviceRequestsTable.createdAt,
       updatedAt: serviceRequestsTable.updatedAt,
@@ -195,16 +196,9 @@ router.get("/requests/:id", requireAuth, async (req, res) => {
     .where(eq(statusLogsTable.requestId, id))
     .orderBy(statusLogsTable.createdAt);
 
-  // Submitter email
-  const [submitter] = await db
-    .select({ email: usersTable.email })
-    .from(usersTable)
-    .where(eq(usersTable.id, row.submittedBy))
-    .limit(1);
-
+  // submitterEmail is already included from getRequestRow (no extra query needed)
   res.json({
     ...row,
-    submitterEmail: submitter?.email ?? null,
     assignment: assignment ?? null,
     logs,
   });
@@ -327,12 +321,17 @@ router.post("/requests/:id/status", requireAuth, async (req, res) => {
   if (!existing) { res.status(404).json({ error: "Request not found" }); return; }
 
   const { role, userId } = req.user!;
-  // Students/staff cannot update status
+  // Only the assigned maintenance officer may update status.
+  // Students/staff cannot update status.
   if (role === "student" || role === "staff") {
     res.status(403).json({ error: "Forbidden" }); return;
   }
-  // Officers can only update status on requests assigned to them
-  // Use Number() on both sides to guard against string/number type mismatch from JWT decode
+  // Admins assign officers — they do not update status themselves.
+  if (role === "admin") {
+    res.status(403).json({ error: "Forbidden" }); return;
+  }
+  // Officers can only update status on requests explicitly assigned to them.
+  // Use Number() on both sides to guard against string/number type mismatch from JWT decode.
   if (role === "maintenance_officer" && Number(existing.assignedTo) !== Number(userId)) {
     res.status(403).json({ error: "Forbidden" }); return;
   }

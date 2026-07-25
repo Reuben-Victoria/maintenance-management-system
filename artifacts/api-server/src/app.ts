@@ -14,33 +14,34 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app: Express = express();
 
-app.use(
-  pinoHttp({
-    logger,
-    serializers: {
-      req(req) {
-        return {
-          id: req.id,
-          method: req.method,
-          url: req.url?.split("?")[0],
-        };
+// Skip verbose request logging in the test environment to keep test output clean
+if (process.env.NODE_ENV !== "test") {
+  app.use(
+    pinoHttp({
+      logger,
+      serializers: {
+        req(req) {
+          return { id: req.id, method: req.method, url: req.url?.split("?")[0] };
+        },
+        res(res) {
+          return { statusCode: res.statusCode };
+        },
       },
-      res(res) {
-        return {
-          statusCode: res.statusCode,
-        };
-      },
-    },
-  }),
-);
+    }),
+  );
+}
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Swagger UI
+// Cache the parsed OpenAPI spec once at startup (avoids repeated disk reads)
 const specPath = path.resolve(__dirname, "../../../lib/api-spec/openapi.yaml");
-if (fs.existsSync(specPath)) {
-  const swaggerDocument = yaml.load(fs.readFileSync(specPath, "utf8")) as Record<string, unknown>;
+const swaggerDocument: Record<string, unknown> | null = fs.existsSync(specPath)
+  ? (yaml.load(fs.readFileSync(specPath, "utf8")) as Record<string, unknown>)
+  : null;
+
+if (swaggerDocument) {
   app.use(
     "/api/docs",
     swaggerUi.serve,
@@ -62,11 +63,10 @@ app.use("/api/uploads", express.static(uploadsDir));
 // Upload route (before main router so multer runs before JSON body parser issues)
 app.use("/api", uploadRouter);
 
-// Serve raw OpenAPI spec as JSON
+// Serve raw OpenAPI spec as JSON — reuse the already-loaded document
 app.get("/api/openapi.json", (_req, res) => {
-  if (fs.existsSync(specPath)) {
-    const spec = yaml.load(fs.readFileSync(specPath, "utf8"));
-    res.json(spec);
+  if (swaggerDocument) {
+    res.json(swaggerDocument);
   } else {
     res.status(404).json({ error: "Spec not found" });
   }
