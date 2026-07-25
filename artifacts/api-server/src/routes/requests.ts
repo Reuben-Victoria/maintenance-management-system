@@ -63,9 +63,11 @@ router.get("/requests", requireAuth, async (req, res) => {
   if (role === "student" || role === "staff") {
     // Students/staff only see requests they submitted
     conditions.push(eq(serviceRequestsTable.submittedBy, userId));
+  } else if (role === "maintenance_officer") {
+    // Officers only see requests assigned to them
+    conditions.push(eq(serviceRequestsTable.assignedTo, userId));
   }
-  // maintenance_officer and admin see all requests (officers need visibility of pending
-  // requests so they know what work is available, not just what's assigned to them)
+  // admin sees everything — no filter added
 
   if (status) conditions.push(eq(serviceRequestsTable.status, status as any));
   if (priority) conditions.push(eq(serviceRequestsTable.priority, priority as any));
@@ -325,12 +327,13 @@ router.post("/requests/:id/status", requireAuth, async (req, res) => {
   if (!existing) { res.status(404).json({ error: "Request not found" }); return; }
 
   const { role, userId } = req.user!;
-  // Officers can only update their assigned requests
-  if (role === "maintenance_officer" && existing.assignedTo !== userId) {
-    res.status(403).json({ error: "Forbidden" }); return;
-  }
   // Students/staff cannot update status
   if (role === "student" || role === "staff") {
+    res.status(403).json({ error: "Forbidden" }); return;
+  }
+  // Officers can only update status on requests assigned to them
+  // Use Number() on both sides to guard against string/number type mismatch from JWT decode
+  if (role === "maintenance_officer" && Number(existing.assignedTo) !== Number(userId)) {
     res.status(403).json({ error: "Forbidden" }); return;
   }
 
