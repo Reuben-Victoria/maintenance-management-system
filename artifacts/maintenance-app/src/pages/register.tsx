@@ -27,7 +27,7 @@ export default function Register() {
   const registerMutation = useRegister({
     mutation: {
       onSuccess: (data) => {
-        login(data.token, data.user);
+        login(data.token);
         setLocation("/dashboard");
       },
       onError: (error) => {

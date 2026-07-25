@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { useListRequests, ListRequestsStatus, ListRequestsPriority } from "@workspace/api-client-react";
+import { useListRequests } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge, PriorityBadge } from "@/components/shared/badges";
 import { formatDate } from "@/lib/utils";
-import { Search, Filter, Plus, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Search, Plus, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 export default function RequestsList() {
@@ -18,29 +18,21 @@ export default function RequestsList() {
   const [priorityFilter, setPriorityFilter] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // Simple debounce for search
-  import("react").then(React => {
-    React.useEffect(() => {
-      const timer = setTimeout(() => setDebouncedSearch(search), 500);
-      return () => clearTimeout(timer);
-    }, [search]);
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
-  const queryParams: any = {
+  const queryParams: Record<string, unknown> = {
     page,
     limit: 10,
     search: debouncedSearch || undefined,
+    status: statusFilter || undefined,
+    priority: priorityFilter || undefined,
   };
 
-  if (statusFilter) queryParams.status = statusFilter;
-  if (priorityFilter) queryParams.priority = priorityFilter;
-
-  // Filter based on role automatically if needed (though backend might handle it)
-  // If backend handles filtering by role automatically, we just pass params.
-  // Actually, usually student sees theirs, officer sees theirs.
-  
-  const { data, isLoading } = useListRequests(queryParams, {
-    query: { keepPreviousData: true }
+  const { data, isLoading } = useListRequests(queryParams as any, {
+    query: { keepPreviousData: true },
   });
 
   return (
@@ -52,7 +44,7 @@ export default function RequestsList() {
         </div>
         {(user?.role === "student" || user?.role === "staff") && (
           <Link href="/requests/new" className={buttonVariants()}>
-              <Plus className="mr-2 h-4 w-4" /> New Request
+            <Plus className="mr-2 h-4 w-4" /> New Request
           </Link>
         )}
       </div>
@@ -61,18 +53,20 @@ export default function RequestsList() {
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by title or ID..." 
+            <Input
+              placeholder="Search by title..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="pl-9"
+              data-testid="input-search"
             />
           </div>
           <div className="flex gap-4">
-            <select 
-              value={statusFilter} 
+            <select
+              value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-testid="select-status-filter"
             >
               <option value="">All Statuses</option>
               <option value="pending">Pending</option>
@@ -82,10 +76,11 @@ export default function RequestsList() {
               <option value="rejected">Rejected</option>
             </select>
 
-            <select 
-              value={priorityFilter} 
+            <select
+              value={priorityFilter}
               onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
               className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-testid="select-priority-filter"
             >
               <option value="">All Priorities</option>
               <option value="low">Low</option>
@@ -126,7 +121,7 @@ export default function RequestsList() {
                 </TableRow>
               ) : (
                 data?.data.map((request) => (
-                  <TableRow key={request.id} className="group cursor-pointer">
+                  <TableRow key={request.id} className="group cursor-pointer" data-testid={`row-request-${request.id}`}>
                     <TableCell className="font-mono text-xs text-muted-foreground">#{request.id}</TableCell>
                     <TableCell className="font-medium">
                       <Link href={`/requests/${request.id}`} className="hover:underline">
@@ -138,8 +133,11 @@ export default function RequestsList() {
                     <TableCell><PriorityBadge priority={request.priority} /></TableCell>
                     <TableCell className="text-muted-foreground text-sm">{formatDate(request.createdAt)}</TableCell>
                     <TableCell className="text-right">
-                      <Link href={`/requests/${request.id}`} className={buttonVariants({ variant: "ghost", size: "sm", className: "opacity-0 group-hover:opacity-100 transition-opacity" })}>
-                          View
+                      <Link
+                        href={`/requests/${request.id}`}
+                        className={buttonVariants({ variant: "ghost", size: "sm", className: "opacity-0 group-hover:opacity-100 transition-opacity" })}
+                      >
+                        View
                       </Link>
                     </TableCell>
                   </TableRow>
@@ -148,28 +146,19 @@ export default function RequestsList() {
             </TableBody>
           </Table>
         </div>
-        
-        {/* Pagination */}
+
         {data && data.total > 0 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-muted/20">
             <div className="text-sm text-muted-foreground">
-              Showing <span className="font-medium text-foreground">{(page - 1) * 10 + 1}</span> to <span className="font-medium text-foreground">{Math.min(page * 10, data.total)}</span> of <span className="font-medium text-foreground">{data.total}</span> requests
+              Showing <span className="font-medium text-foreground">{(page - 1) * 10 + 1}</span> to{" "}
+              <span className="font-medium text-foreground">{Math.min(page * 10, data.total)}</span> of{" "}
+              <span className="font-medium text-foreground">{data.total}</span> requests
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
+              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
                 <ChevronLeft className="h-4 w-4 mr-1" /> Prev
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setPage(p => p + 1)}
-                disabled={page * 10 >= data.total}
-              >
+              <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page * 10 >= data.total}>
                 Next <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>

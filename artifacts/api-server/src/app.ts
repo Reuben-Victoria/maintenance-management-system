@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import router from "./routes";
+import uploadRouter, { uploadsDir } from "./routes/upload";
 import { logger } from "./lib/logger";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -54,6 +55,12 @@ if (fs.existsSync(specPath)) {
   );
   logger.info("Swagger UI available at /api/docs");
 }
+
+// Serve uploaded files
+app.use("/api/uploads", express.static(uploadsDir));
+
+// Upload route (before main router so multer runs before JSON body parser issues)
+app.use("/api", uploadRouter);
 
 // Serve raw OpenAPI spec as JSON
 app.get("/api/openapi.json", (_req, res) => {
