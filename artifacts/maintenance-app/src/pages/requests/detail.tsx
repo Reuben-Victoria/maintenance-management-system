@@ -97,8 +97,9 @@ export default function RequestDetail() {
     return <div className="flex justify-center p-12"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
 
-  const isOfficerOrAdmin = user?.role === "admin" || user?.role === "maintenance_officer";
-  const canUpdateStatus = isOfficerOrAdmin && (request.status !== "completed" && request.status !== "rejected");
+  const isAdmin = user?.role === "admin";
+  const isAssignedOfficer = user?.role === "maintenance_officer" && request.assignment?.officerId === user?.id;
+  const canUpdateStatus = (isAdmin || isAssignedOfficer) && request.status !== "completed" && request.status !== "rejected";
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 pb-12">
