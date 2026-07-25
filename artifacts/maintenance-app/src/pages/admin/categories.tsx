@@ -30,7 +30,7 @@ export default function AdminCategories() {
         refetch();
       },
       onError: (err) =>
-        toast({ title: "Failed to add", description: err.data?.error, variant: "destructive" })
+        toast({ title: "Failed to add", description: (err as any).data?.error, variant: "destructive" })
     }
   });
 
@@ -42,7 +42,7 @@ export default function AdminCategories() {
         refetch();
       },
       onError: (err) =>
-        toast({ title: "Failed to update", description: err.data?.error, variant: "destructive" })
+        toast({ title: "Failed to update", description: (err as any).data?.error, variant: "destructive" })
     }
   });
 
@@ -53,7 +53,7 @@ export default function AdminCategories() {
         refetch();
       },
       onError: (err) =>
-        toast({ title: "Failed to delete", description: err.data?.error, variant: "destructive" })
+        toast({ title: "Failed to delete", description: (err as any).data?.error, variant: "destructive" })
     }
   });
 

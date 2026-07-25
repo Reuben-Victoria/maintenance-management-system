@@ -34,7 +34,8 @@ export default function RequestsList() {
   };
 
   const { data, isLoading } = useListRequests(queryParams as any, {
-    query: { keepPreviousData: true },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { placeholderData: (prev: any) => prev } as any,
   });
 
   return (

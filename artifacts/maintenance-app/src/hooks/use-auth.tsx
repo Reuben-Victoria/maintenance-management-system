@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (token: string, user: User) => void;
+  login: (token: string) => void;
   logout: () => void;
 }
 
@@ -26,10 +26,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const { data: user, isLoading, isError } = useGetMe({
-    query: {
-      enabled: !!token,
-      retry: false,
-    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    query: { enabled: !!token, retry: false } as any,
   });
 
   useEffect(() => {
