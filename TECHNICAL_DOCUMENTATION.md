@@ -38,7 +38,7 @@ The **University Maintenance Request System (UMRS)** is a full-stack web applica
                    │  SQL (pg driver)
                    ▼
 ┌─────────────────────────────────────────────────────────────┐
-│           Replit PostgreSQL (managed instance)              │
+│                    PostgreSQL Database                      │
 │   6 tables: users · categories · service_requests          │
 │             assignments · status_logs · (sessions)         │
 └─────────────────────────────────────────────────────────────┘
@@ -92,8 +92,8 @@ workspace/
 ### Infrastructure
 | Component | Provider |
 |---|---|
-| Hosting | Replit (managed containers) |
-| Database | Replit PostgreSQL |
+| Hosting | Cloud (managed containers) |
+| Database | PostgreSQL |
 | File storage | Local `/uploads` directory served statically |
 | CI/Source control | GitHub (`Reuben-Victoria/maintenance-management-system`) |
 
@@ -179,7 +179,7 @@ service_requests< status_logs (request_id)
 ## 5. API Design
 
 ### Base URL
-- Development: `https://<replit-dev-domain>/api`
+- Development: `https://<dev-domain>/api`
 - Production: `https://<deployment-domain>/api`
 - Swagger UI: `GET /api/docs`
 
@@ -263,7 +263,7 @@ Token lifetime: **7 days**
 
 ### Security Measures
 - **Passwords** hashed with bcrypt (salt rounds = 10; never stored in plaintext)
-- **JWT** signed with a secret stored as a Replit environment secret (`SESSION_SECRET`)
+- **JWT** signed with a secret stored as an environment secret (`SESSION_SECRET`)
 - **Role enforcement** at the API layer — frontend UI gating is supplementary, not trusted
 - **CORS** restricted to same-origin in production via `cors()` middleware
 - **Input validation** with Zod schemas on all mutation endpoints
@@ -335,7 +335,7 @@ The `/reports/export` endpoint streams a CSV using the Node.js built-in response
 ### Prerequisites
 - Node.js 20+
 - pnpm 8+
-- A PostgreSQL database (Replit provides one automatically)
+- A PostgreSQL database
 
 ### Steps
 ```bash
@@ -370,17 +370,17 @@ pnpm --filter @workspace/maintenance-app run dev
 
 ## 11. Deployment
 
-The application is deployed on Replit's managed cloud infrastructure:
+The application is deployed on managed cloud infrastructure:
 
-- **Frontend:** served as a static Vite build behind Replit's HTTPS proxy
+- **Frontend:** served as a static Vite build behind an HTTPS proxy
 - **Backend:** Express server running as a persistent workflow on port 8080
-- **Database:** Replit PostgreSQL — automatically provisioned and backed up
+- **Database:** PostgreSQL — automatically provisioned and backed up
 
-Production URL: available via the Replit deployment panel after publishing.
+Production URL: available after publishing via the deployment panel.
 
 To redeploy after code changes:
 1. Commit and push to GitHub (`main` branch)
-2. Click **Publish** in the Replit workspace
+2. Click **Publish** in the workspace
 
 ---
 

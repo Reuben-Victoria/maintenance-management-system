@@ -126,7 +126,7 @@ The system was designed to achieve the following objectives:
 ## 6. Database: Type and Relationships
 
 ### Database System
-**PostgreSQL** (managed Replit instance) — a relational database management system (RDBMS) chosen for its:
+**PostgreSQL** — a relational database management system (RDBMS) chosen for its:
 - Strong ACID compliance (critical for audit log integrity)
 - Rich support for enums (status and priority values)
 - Foreign key constraints (enforcing referential integrity between tables)
@@ -374,6 +374,6 @@ The system is extensible: the modular Express route structure, the Drizzle ORM s
 
 ---
 
-*Live application: available at the deployed Replit URL*  
+*Live application: available at the deployed URL*  
 *API documentation: `<deployed-url>/api/docs`*  
 *Source code: https://github.com/Reuben-Victoria/maintenance-management-system*
