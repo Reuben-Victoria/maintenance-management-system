@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useListCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TableEmptyState } from "@/components/shared/empty-state";
 import { formatDate } from "@/lib/utils";
-import { Loader2, Plus, Trash2, Edit2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Edit2, Tag } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
@@ -96,9 +97,18 @@ export default function AdminCategories() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={4} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" /></TableCell></TableRow>
+              <TableEmptyState
+                colSpan={4}
+                icon={<Loader2 className="h-7 w-7 animate-spin" />}
+                title="Loading categories…"
+              />
             ) : categories?.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="h-32 text-center text-muted-foreground">No categories defined.</TableCell></TableRow>
+              <TableEmptyState
+                colSpan={4}
+                icon={<Tag className="h-7 w-7" />}
+                title="No categories yet"
+                description="Add your first category using the form above to let users classify their maintenance requests."
+              />
             ) : (
               categories?.map((cat) => (
                 <TableRow key={cat.id}>

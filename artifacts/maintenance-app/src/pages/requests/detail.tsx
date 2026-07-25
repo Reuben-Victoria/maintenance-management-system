@@ -21,7 +21,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge, PriorityBadge } from "@/components/shared/badges";
 import { useToast } from "@/hooks/use-toast";
 import { formatDateTime } from "@/lib/utils";
-import { Loader2, ArrowLeft, UserCircle, MapPin, Calendar, Image as ImageIcon, CheckCircle2, History, Trash2, Edit3 } from "lucide-react";
+import { Loader2, ArrowLeft, UserCircle, MapPin, Calendar, Image as ImageIcon, CheckCircle2, History, Trash2, Edit3, ClipboardList } from "lucide-react";
+import { EmptyState } from "@/components/shared/empty-state";
 import { Input } from "@/components/ui/input";
 
 export default function RequestDetail() {
@@ -188,8 +189,12 @@ export default function RequestDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {loadingLogs ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mx-auto" /> : 
-               logs && logs.length > 0 ? (
+              {loadingLogs ? (
+                <EmptyState
+                  icon={<Loader2 className="h-7 w-7 animate-spin" />}
+                  title="Loading history…"
+                />
+              ) : logs && logs.length > 0 ? (
                 <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
                   {logs.map((log, i) => (
                     <div key={log.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
@@ -208,7 +213,11 @@ export default function RequestDetail() {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-sm text-center py-4">No history available.</p>
+                <EmptyState
+                  icon={<ClipboardList className="h-7 w-7" />}
+                  title="No history yet"
+                  description="Status changes and updates will appear here once activity begins on this request."
+                />
               )}
             </CardContent>
           </Card>

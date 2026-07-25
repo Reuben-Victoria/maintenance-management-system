@@ -3,10 +3,11 @@ import { useListUsers, useUpdateUser, useDeleteUser, useGetUser, ListUsersRole, 
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RoleBadge } from "@/components/shared/badges";
+import { TableEmptyState } from "@/components/shared/empty-state";
 import { formatDate } from "@/lib/utils";
-import { Search, Loader2, Edit, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { Search, Loader2, Trash2, CheckCircle, XCircle, Users } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 
@@ -103,9 +104,27 @@ export default function AdminUsers() {
             </TableHeader>
             <TableBody>
               {isLoading && !data ? (
-                <TableRow><TableCell colSpan={6} className="h-32 text-center"><Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" /></TableCell></TableRow>
+                <TableEmptyState
+                  colSpan={6}
+                  icon={<Loader2 className="h-7 w-7 animate-spin" />}
+                  title="Loading users…"
+                />
               ) : data?.data.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="h-32 text-center text-muted-foreground">No users found.</TableCell></TableRow>
+                search || roleFilter ? (
+                  <TableEmptyState
+                    colSpan={6}
+                    icon={<Search className="h-7 w-7" />}
+                    title="No users match your search"
+                    description="Try a different name, email, or role filter."
+                  />
+                ) : (
+                  <TableEmptyState
+                    colSpan={6}
+                    icon={<Users className="h-7 w-7" />}
+                    title="No users registered yet"
+                    description="Users will appear here once they create an account."
+                  />
+                )
               ) : (
                 data?.data.map((u) => (
                   <TableRow key={u.id}>

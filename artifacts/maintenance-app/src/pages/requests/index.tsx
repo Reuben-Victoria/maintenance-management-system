@@ -4,10 +4,11 @@ import { useListRequests } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge, PriorityBadge } from "@/components/shared/badges";
+import { TableEmptyState } from "@/components/shared/empty-state";
 import { formatDate } from "@/lib/utils";
-import { Search, Plus, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Search, Plus, ChevronLeft, ChevronRight, Loader2, FileX, SlidersHorizontal } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 export default function RequestsList() {
@@ -108,17 +109,40 @@ export default function RequestsList() {
             </TableHeader>
             <TableBody>
               {isLoading && !data ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
-                  </TableCell>
-                </TableRow>
+                <TableEmptyState
+                  colSpan={7}
+                  icon={<Loader2 className="h-7 w-7 animate-spin" />}
+                  title="Loading requests…"
+                />
               ) : data?.data.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
-                    No requests found matching your criteria.
-                  </TableCell>
-                </TableRow>
+                debouncedSearch || statusFilter || priorityFilter ? (
+                  <TableEmptyState
+                    colSpan={7}
+                    icon={<SlidersHorizontal className="h-7 w-7" />}
+                    title="No matching requests"
+                    description="Try adjusting your search term or filters to find what you're looking for."
+                  />
+                ) : (
+                  <TableEmptyState
+                    colSpan={7}
+                    icon={<FileX className="h-7 w-7" />}
+                    title="No requests yet"
+                    description={
+                      user?.role === "student" || user?.role === "staff"
+                        ? "You haven't submitted any maintenance requests. Use the 'New Request' button to get started."
+                        : user?.role === "maintenance_officer"
+                        ? "No requests have been assigned to you yet."
+                        : "No maintenance requests have been submitted yet."
+                    }
+                    action={
+                      (user?.role === "student" || user?.role === "staff") ? (
+                        <a href="/requests/new" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
+                          <Plus className="h-4 w-4" /> Create your first request
+                        </a>
+                      ) : undefined
+                    }
+                  />
+                )
               ) : (
                 data?.data.map((request) => (
                   <TableRow key={request.id} className="group cursor-pointer" data-testid={`row-request-${request.id}`}>
