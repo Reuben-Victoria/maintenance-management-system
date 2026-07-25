@@ -104,15 +104,17 @@ export default function RequestDetail() {
   }
 
   const isAdmin = user?.role === "admin";
+  // Only the assigned maintenance officer can update status — NOT admin
   const isAssignedOfficer =
     user?.role === "maintenance_officer" && request.assignment?.officerId === user?.id;
   const canUpdateStatus =
-    (isAdmin || isAssignedOfficer) &&
+    isAssignedOfficer &&
     request.status !== "completed" &&
     request.status !== "rejected";
 
   return (
     <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 pb-12">
+      {/* Back + title row */}
       <Link
         href="/requests"
         className={buttonVariants({
@@ -124,19 +126,19 @@ export default function RequestDetail() {
         <IonIcon name="arrow-back-outline" style={{ fontSize: "16px" }} /> Back to Requests
       </Link>
 
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold tracking-tight">{request.title}</h1>
-            <StatusBadge status={request.status} className="text-sm px-3 py-1" />
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div className="space-y-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">{request.title}</h1>
+            <StatusBadge status={request.status} className="text-sm px-3 py-1 shrink-0" />
           </div>
           <p className="text-muted-foreground font-mono text-sm">
             Request #{request.id} • {request.categoryName || "Uncategorized"}
           </p>
         </div>
-        <div className="flex flex-col gap-2 items-end">
+        <div className="flex flex-row sm:flex-col gap-2 items-start sm:items-end shrink-0">
           <PriorityBadge priority={request.priority} className="w-fit text-sm px-3 py-1" />
-          {user?.role === "admin" && (
+          {isAdmin && (
             <Button
               variant="destructive"
               size="sm"
@@ -157,157 +159,29 @@ export default function RequestDetail() {
         </div>
       </div>
 
+      {/* Main grid — sidebar comes FIRST on mobile so officer sees assignment/status immediately */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-border/50 shadow-sm">
-            <CardContent className="pt-6 space-y-6">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-                  {user?.role === "admin" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="gap-1"
-                      onClick={() => {
-                        const newDesc = prompt("Update description:", request.description);
-                        if (newDesc && newDesc !== request.description)
-                          updateMutation.mutate({ id, data: { description: newDesc } });
-                      }}
-                    >
-                      <IonIcon name="create-outline" style={{ fontSize: "12px" }} /> Edit
-                    </Button>
-                  )}
-                </div>
-                <p className="text-foreground whitespace-pre-wrap leading-relaxed">
-                  {request.description}
-                </p>
-              </div>
 
-              <div className="flex flex-wrap gap-6 pt-4 border-t border-border/50">
-                <div className="flex items-center gap-2 text-sm">
-                  <IonIcon
-                    name="person-circle-outline"
-                    style={{ fontSize: "16px", color: "var(--muted-foreground)" }}
-                  />
-                  <span className="text-muted-foreground">Submitted by:</span>
-                  <span className="font-medium">{request.submitterName}</span>
-                </div>
-                {request.location && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <IonIcon
-                      name="location-outline"
-                      style={{ fontSize: "16px", color: "var(--muted-foreground)" }}
-                    />
-                    <span className="text-muted-foreground">Location:</span>
-                    <span className="font-medium">{request.location}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-sm">
-                  <IonIcon
-                    name="calendar-outline"
-                    style={{ fontSize: "16px", color: "var(--muted-foreground)" }}
-                  />
-                  <span className="text-muted-foreground">Created:</span>
-                  <span className="font-medium">{formatDateTime(request.createdAt)}</span>
-                </div>
-              </div>
+        {/* RIGHT COLUMN: Assignment + Status — order-1 on mobile, order-2 on desktop */}
+        <div className="space-y-6 order-1 lg:order-2">
 
-              {request.evidenceUrl && (
-                <div className="pt-4 border-t border-border/50">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                    <IonIcon name="image-outline" style={{ fontSize: "16px" }} /> Attached Evidence
-                  </h3>
-                  <a
-                    href={request.evidenceUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="block max-w-sm rounded-lg overflow-hidden border border-border/50 hover:opacity-90 transition-opacity"
-                  >
-                    <img
-                      src={request.evidenceUrl}
-                      alt="Evidence"
-                      className="w-full h-auto object-cover"
-                      onError={(e) => (e.currentTarget.style.display = "none")}
-                    />
-                    <div className="p-3 bg-muted/50 text-sm truncate">{request.evidenceUrl}</div>
-                  </a>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/50 shadow-sm">
+          {/* Assignment card */}
+          <Card className="border-border/50 shadow-sm bg-muted/10">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">
-                <IonIcon
-                  name="time-outline"
-                  style={{ fontSize: "20px", color: "var(--muted-foreground)" }}
-                />
-                Status History
+                <IonIcon name="person-outline" style={{ fontSize: "18px", color: "var(--muted-foreground)" }} />
+                Assignment
               </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loadingLogs ? (
-                <EmptyState
-                  icon={<Spinner className="h-7 w-7 text-primary" />}
-                  title="Loading history…"
-                />
-              ) : logs && logs.length > 0 ? (
-                <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
-                  {logs.map((log) => (
-                    <div
-                      key={log.id}
-                      className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active"
-                    >
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-muted text-muted-foreground shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 relative z-10">
-                        <IonIcon
-                          name="checkmark-circle-outline"
-                          style={{ fontSize: "16px" }}
-                        />
-                      </div>
-                      <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-xl border border-border/50 bg-card shadow-sm">
-                        <div className="flex items-center justify-between mb-1">
-                          <StatusBadge status={log.newStatus} className="text-[10px] px-2 py-0 h-5" />
-                          <time className="text-xs text-muted-foreground">
-                            {formatDateTime(log.createdAt)}
-                          </time>
-                        </div>
-                        <p className="text-sm font-medium mt-2">{log.changedByName}</p>
-                        {log.note && (
-                          <p className="text-sm text-muted-foreground mt-1 bg-muted/30 p-2 rounded-md">
-                            {log.note}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <EmptyState
-                  icon={<IonIcon name="clipboard-outline" style={{ fontSize: "28px" }} />}
-                  title="No history yet"
-                  description="Status changes and updates will appear here once activity begins on this request."
-                />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card className="border-border/50 shadow-sm bg-muted/10">
-            <CardHeader>
-              <CardTitle className="text-lg">Assignment</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {request.assignment ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 p-3 bg-background rounded-lg border border-border/50">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold shrink-0">
                       {request.officerName ? request.officerName.charAt(0) : "O"}
                     </div>
-                    <div>
-                      <p className="font-medium">{request.officerName}</p>
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{request.officerName}</p>
                       <p className="text-xs text-muted-foreground">
                         Assigned on {formatDateTime(request.assignment.assignedAt)}
                       </p>
@@ -315,9 +189,7 @@ export default function RequestDetail() {
                   </div>
                   {request.assignment.notes && (
                     <div className="text-sm text-muted-foreground bg-background p-3 rounded-lg border border-border/50">
-                      <span className="font-medium text-foreground block mb-1">
-                        Assignment Note:
-                      </span>
+                      <span className="font-medium text-foreground block mb-1">Assignment Note:</span>
                       {request.assignment.notes}
                     </div>
                   )}
@@ -328,7 +200,8 @@ export default function RequestDetail() {
                 </p>
               )}
 
-              {user?.role === "admin" && (
+              {/* Admin-only: assign / reassign */}
+              {isAdmin && (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -338,9 +211,9 @@ export default function RequestDetail() {
                       data: { officerId: Number(assignOfficerId), notes: assignNote }
                     });
                   }}
-                  className="pt-4 border-t border-border/50 mt-4 space-y-3"
+                  className="pt-4 border-t border-border/50 space-y-3"
                 >
-                  <Label className="text-sm font-semibold">Assign/Reassign Officer</Label>
+                  <Label className="text-sm font-semibold">Assign / Reassign Officer</Label>
                   <select
                     value={assignOfficerId}
                     onChange={(e) => setAssignOfficerId(e.target.value)}
@@ -349,9 +222,7 @@ export default function RequestDetail() {
                   >
                     <option value="">Select Officer...</option>
                     {officers?.map((o) => (
-                      <option key={o.id} value={o.id}>
-                        {o.name}
-                      </option>
+                      <option key={o.id} value={o.id}>{o.name}</option>
                     ))}
                   </select>
                   <Input
@@ -374,6 +245,7 @@ export default function RequestDetail() {
             </CardContent>
           </Card>
 
+          {/* Update Status — assigned officer only */}
           {canUpdateStatus && (
             <Card className="border-border/50 shadow-sm">
               <CardHeader>
@@ -432,6 +304,137 @@ export default function RequestDetail() {
               </CardContent>
             </Card>
           )}
+        </div>
+
+        {/* LEFT COLUMN: Description + History — order-2 on mobile, order-1 on desktop */}
+        <div className="lg:col-span-2 space-y-6 order-2 lg:order-1">
+
+          {/* Details card */}
+          <Card className="border-border/50 shadow-sm">
+            <CardContent className="pt-6 space-y-6">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
+                  {isAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1"
+                      onClick={() => {
+                        const newDesc = prompt("Update description:", request.description);
+                        if (newDesc && newDesc !== request.description)
+                          updateMutation.mutate({ id, data: { description: newDesc } });
+                      }}
+                    >
+                      <IonIcon name="create-outline" style={{ fontSize: "12px" }} /> Edit
+                    </Button>
+                  )}
+                </div>
+                <p className="text-foreground whitespace-pre-wrap leading-relaxed">
+                  {request.description}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-4 sm:gap-6 pt-4 border-t border-border/50">
+                <div className="flex items-center gap-2 text-sm">
+                  <IonIcon name="person-circle-outline" style={{ fontSize: "16px", color: "var(--muted-foreground)" }} />
+                  <span className="text-muted-foreground">By:</span>
+                  <span className="font-medium">{request.submitterName}</span>
+                </div>
+                {request.location && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <IonIcon name="location-outline" style={{ fontSize: "16px", color: "var(--muted-foreground)" }} />
+                    <span className="text-muted-foreground">Location:</span>
+                    <span className="font-medium">{request.location}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm">
+                  <IonIcon name="calendar-outline" style={{ fontSize: "16px", color: "var(--muted-foreground)" }} />
+                  <span className="text-muted-foreground">Created:</span>
+                  <span className="font-medium">{formatDateTime(request.createdAt)}</span>
+                </div>
+              </div>
+
+              {request.evidenceUrl && (
+                <div className="pt-4 border-t border-border/50">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                    <IonIcon name="image-outline" style={{ fontSize: "16px" }} /> Attached Evidence
+                  </h3>
+                  <a
+                    href={request.evidenceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="block max-w-sm rounded-lg overflow-hidden border border-border/50 hover:opacity-90 transition-opacity"
+                  >
+                    <img
+                      src={request.evidenceUrl}
+                      alt="Evidence"
+                      className="w-full h-auto object-cover"
+                      onError={(e) => (e.currentTarget.style.display = "none")}
+                    />
+                    <div className="p-3 bg-muted/50 text-sm truncate">{request.evidenceUrl}</div>
+                  </a>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Status History — scrollable */}
+          <Card className="border-border/50 shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <IonIcon name="time-outline" style={{ fontSize: "20px", color: "var(--muted-foreground)" }} />
+                Status History
+              </CardTitle>
+              {logs && logs.length > 3 && (
+                <p className="text-xs text-muted-foreground mt-1">Scroll to see all {logs.length} entries</p>
+              )}
+            </CardHeader>
+            <CardContent className="p-0">
+              {loadingLogs ? (
+                <div className="p-6">
+                  <EmptyState icon={<Spinner className="h-7 w-7 text-primary" />} title="Loading history…" />
+                </div>
+              ) : logs && logs.length > 0 ? (
+                /* Scrollable timeline container */
+                <div className="max-h-[500px] overflow-y-auto px-6 pb-6 pt-2">
+                  <div className="space-y-4 relative before:absolute before:left-5 before:top-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
+                    {logs.map((log) => (
+                      <div key={log.id} className="relative flex items-start gap-4 pl-14">
+                        {/* Timeline dot */}
+                        <div className="absolute left-0 w-10 h-10 rounded-full border-4 border-background bg-muted flex items-center justify-center shadow shrink-0 z-10">
+                          <IonIcon name="checkmark-circle-outline" style={{ fontSize: "16px" }} />
+                        </div>
+                        {/* Card */}
+                        <div className="flex-1 p-4 rounded-xl border border-border/50 bg-card shadow-sm">
+                          <div className="flex items-center justify-between mb-1 gap-2 flex-wrap">
+                            <StatusBadge status={log.newStatus} className="text-[10px] px-2 py-0 h-5" />
+                            <time className="text-xs text-muted-foreground whitespace-nowrap">
+                              {formatDateTime(log.createdAt)}
+                            </time>
+                          </div>
+                          <p className="text-sm font-medium mt-2">{log.changedByName}</p>
+                          {log.note && (
+                            <p className="text-sm text-muted-foreground mt-1 bg-muted/30 p-2 rounded-md">
+                              {log.note}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6">
+                  <EmptyState
+                    icon={<IonIcon name="clipboard-outline" style={{ fontSize: "28px" }} />}
+                    title="No history yet"
+                    description="Status changes and updates will appear here once activity begins on this request."
+                  />
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
