@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Loader2 } from "lucide-react";
+import { IonIcon } from "@/components/ui/ion-icon";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -40,14 +41,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
-      {/* Background decoration */}
       <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
 
       <Card className="w-full max-w-md relative z-10 border-border/50 shadow-xl shadow-black/5">
         <CardHeader className="space-y-3 pb-6 text-center">
-          <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-2 shadow-sm shadow-primary/20">
-            <FileText className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-2 shadow-md shadow-primary/20">
+            <IonIcon name="construct-outline" style={{ fontSize: "28px", color: "white" }} />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">Welcome back</CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -58,10 +58,10 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="name@university.edu" 
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@university.edu"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -70,12 +70,10 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-              </div>
-              <Input 
-                id="password" 
-                type="password" 
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -83,13 +81,13 @@ export default function Login() {
                 className="h-11"
               />
             </div>
-            <Button 
-              type="submit" 
-              className="w-full h-11 text-base mt-2" 
+            <Button
+              type="submit"
+              className="w-full h-11 text-base mt-2 gap-2"
               disabled={loginMutation.isPending}
               data-testid="button-submit"
             >
-              {loginMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+              {loginMutation.isPending ? <Spinner className="h-5 w-5" /> : null}
               Sign In
             </Button>
           </form>
@@ -98,7 +96,9 @@ export default function Login() {
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
             <Link href="/register">
-              <span className="text-primary font-medium hover:underline cursor-pointer">Register</span>
+              <span className="text-primary font-medium hover:underline cursor-pointer">
+                Register
+              </span>
             </Link>
           </p>
         </CardFooter>

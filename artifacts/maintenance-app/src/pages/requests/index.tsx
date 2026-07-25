@@ -4,11 +4,12 @@ import { useListRequests } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge, PriorityBadge } from "@/components/shared/badges";
 import { TableEmptyState } from "@/components/shared/empty-state";
+import { IonIcon } from "@/components/ui/ion-icon";
+import { Spinner } from "@/components/ui/spinner";
 import { formatDate } from "@/lib/utils";
-import { Search, Plus, ChevronLeft, ChevronRight, Loader2, FileX, SlidersHorizontal } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 export default function RequestsList() {
@@ -44,8 +45,8 @@ export default function RequestsList() {
           <p className="text-muted-foreground">Manage and track service requests across campus.</p>
         </div>
         {(user?.role === "student" || user?.role === "staff") && (
-          <Link href="/requests/new" className={buttonVariants()}>
-            <Plus className="mr-2 h-4 w-4" /> New Request
+          <Link href="/requests/new" className={buttonVariants({ className: "gap-2" })}>
+            <IonIcon name="add-outline" style={{ fontSize: "16px" }} /> New Request
           </Link>
         )}
       </div>
@@ -53,7 +54,10 @@ export default function RequestsList() {
       <Card className="p-4 shadow-sm border-border/50">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <IonIcon
+              name="search-outline"
+              style={{ fontSize: "16px", position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--muted-foreground)" }}
+            />
             <Input
               placeholder="Search by title..."
               value={search}
@@ -111,21 +115,21 @@ export default function RequestsList() {
               {isLoading && !data ? (
                 <TableEmptyState
                   colSpan={7}
-                  icon={<Loader2 className="h-7 w-7 animate-spin" />}
+                  icon={<Spinner className="h-7 w-7 text-primary" />}
                   title="Loading requests…"
                 />
               ) : data?.data.length === 0 ? (
                 debouncedSearch || statusFilter || priorityFilter ? (
                   <TableEmptyState
                     colSpan={7}
-                    icon={<SlidersHorizontal className="h-7 w-7" />}
+                    icon={<IonIcon name="options-outline" style={{ fontSize: "28px" }} />}
                     title="No matching requests"
                     description="Try adjusting your search term or filters to find what you're looking for."
                   />
                 ) : (
                   <TableEmptyState
                     colSpan={7}
-                    icon={<FileX className="h-7 w-7" />}
+                    icon={<IonIcon name="document-outline" style={{ fontSize: "28px" }} />}
                     title="No requests yet"
                     description={
                       user?.role === "student" || user?.role === "staff"
@@ -135,9 +139,13 @@ export default function RequestsList() {
                         : "No maintenance requests have been submitted yet."
                     }
                     action={
-                      (user?.role === "student" || user?.role === "staff") ? (
-                        <a href="/requests/new" className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
-                          <Plus className="h-4 w-4" /> Create your first request
+                      user?.role === "student" || user?.role === "staff" ? (
+                        <a
+                          href="/requests/new"
+                          className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+                        >
+                          <IonIcon name="add-circle-outline" style={{ fontSize: "16px" }} />
+                          Create your first request
                         </a>
                       ) : undefined
                     }
@@ -145,21 +153,37 @@ export default function RequestsList() {
                 )
               ) : (
                 data?.data.map((request) => (
-                  <TableRow key={request.id} className="group cursor-pointer" data-testid={`row-request-${request.id}`}>
-                    <TableCell className="font-mono text-xs text-muted-foreground">#{request.id}</TableCell>
+                  <TableRow
+                    key={request.id}
+                    className="group cursor-pointer"
+                    data-testid={`row-request-${request.id}`}
+                  >
+                    <TableCell className="font-mono text-xs text-muted-foreground">
+                      #{request.id}
+                    </TableCell>
                     <TableCell className="font-medium">
                       <Link href={`/requests/${request.id}`} className="hover:underline">
                         {request.title}
                       </Link>
                     </TableCell>
                     <TableCell>{request.categoryName || "Uncategorized"}</TableCell>
-                    <TableCell><StatusBadge status={request.status} /></TableCell>
-                    <TableCell><PriorityBadge priority={request.priority} /></TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{formatDate(request.createdAt)}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={request.status} />
+                    </TableCell>
+                    <TableCell>
+                      <PriorityBadge priority={request.priority} />
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-sm">
+                      {formatDate(request.createdAt)}
+                    </TableCell>
                     <TableCell className="text-right">
                       <Link
                         href={`/requests/${request.id}`}
-                        className={buttonVariants({ variant: "ghost", size: "sm", className: "opacity-0 group-hover:opacity-100 transition-opacity" })}
+                        className={buttonVariants({
+                          variant: "ghost",
+                          size: "sm",
+                          className: "opacity-0 group-hover:opacity-100 transition-opacity"
+                        })}
                       >
                         View
                       </Link>
@@ -174,16 +198,31 @@ export default function RequestsList() {
         {data && data.total > 0 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-muted/20">
             <div className="text-sm text-muted-foreground">
-              Showing <span className="font-medium text-foreground">{(page - 1) * 10 + 1}</span> to{" "}
-              <span className="font-medium text-foreground">{Math.min(page * 10, data.total)}</span> of{" "}
-              <span className="font-medium text-foreground">{data.total}</span> requests
+              Showing{" "}
+              <span className="font-medium text-foreground">{(page - 1) * 10 + 1}</span> to{" "}
+              <span className="font-medium text-foreground">
+                {Math.min(page * 10, data.total)}
+              </span>{" "}
+              of <span className="font-medium text-foreground">{data.total}</span> requests
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
-                <ChevronLeft className="h-4 w-4 mr-1" /> Prev
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="gap-1"
+              >
+                <IonIcon name="chevron-back-outline" style={{ fontSize: "14px" }} /> Prev
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={page * 10 >= data.total}>
-                Next <ChevronRight className="h-4 w-4 ml-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage((p) => p + 1)}
+                disabled={page * 10 >= data.total}
+                className="gap-1"
+              >
+                Next <IonIcon name="chevron-forward-outline" style={{ fontSize: "14px" }} />
               </Button>
             </div>
           </div>

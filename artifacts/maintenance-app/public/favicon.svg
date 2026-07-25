@@ -1,3 +1,15 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+  <rect width="180" height="180" rx="40" fill="#2563EB"/>
+  <!-- University building outline -->
+  <rect x="36" y="96" width="108" height="54" rx="4" fill="white" opacity="0.15"/>
+  <rect x="36" y="96" width="108" height="54" rx="4" stroke="white" stroke-width="5" fill="none"/>
+  <!-- Columns -->
+  <rect x="52" y="96" width="10" height="54" fill="white" opacity="0.25"/>
+  <rect x="85" y="96" width="10" height="54" fill="white" opacity="0.25"/>
+  <rect x="118" y="96" width="10" height="54" fill="white" opacity="0.25"/>
+  <!-- Roof / pediment -->
+  <path d="M28 96 L90 46 L152 96Z" fill="#2563EB" stroke="white" stroke-width="5" stroke-linejoin="round"/>
+  <!-- Wrench overlay (top right) -->
+  <circle cx="132" cy="52" r="26" fill="#2563EB"/>
+  <path d="M132 34c-3.6 0-7 1.2-9.6 3.4l3.4 3.4-1.8 4.8-4.8 1.8-3.4-3.4A14 14 0 0 0 118 52c0 7.7 6.3 14 14 14a14 14 0 0 0 13.4-18.2l-5.6 5.6-4.8-1.8-1.8-4.8 5.6-5.6A14 14 0 0 0 132 34Z" fill="white"/>
 </svg>

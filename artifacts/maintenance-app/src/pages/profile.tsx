@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Mail, Building, Phone, BadgeCheck } from "lucide-react";
+import { IonIcon } from "@/components/ui/ion-icon";
+import { Spinner } from "@/components/ui/spinner";
 import { RoleBadge } from "@/components/shared/badges";
 
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState({
     name: "",
     department: "",
@@ -44,8 +45,8 @@ export default function Profile() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate({ 
-      id: user.id, 
+    updateMutation.mutate({
+      id: user.id,
       data: {
         name: formData.name,
         department: formData.department,
@@ -65,7 +66,12 @@ export default function Profile() {
         <Card className="md:col-span-1 border-border/50 shadow-sm h-fit">
           <CardContent className="pt-6 flex flex-col items-center text-center space-y-4">
             <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center text-primary text-2xl font-bold border-4 border-background shadow-sm">
-              {user.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()}
+              {user.name
+                .split(" ")
+                .map((n) => n[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()}
             </div>
             <div>
               <h2 className="text-xl font-bold">{user.name}</h2>
@@ -83,52 +89,81 @@ export default function Profile() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /> Full Name</Label>
-                <Input 
-                  id="name" 
-                  value={formData.name} 
-                  onChange={e => setFormData({ ...formData, name: e.target.value })} 
-                  required 
+                <Label htmlFor="name" className="flex items-center gap-2">
+                  <IonIcon name="person-outline" style={{ fontSize: "14px", color: "var(--muted-foreground)" }} />
+                  Full Name
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> Email Address</Label>
-                <Input value={user.email} disabled className="bg-muted/50 cursor-not-allowed" />
+                <Label className="flex items-center gap-2">
+                  <IonIcon name="mail-outline" style={{ fontSize: "14px", color: "var(--muted-foreground)" }} />
+                  Email Address
+                </Label>
+                <Input
+                  value={user.email}
+                  disabled
+                  className="bg-muted/50 cursor-not-allowed"
+                />
                 <p className="text-xs text-muted-foreground">Email cannot be changed.</p>
               </div>
 
-              {(user.role === "staff" || user.role === "admin" || user.role === "maintenance_officer") && (
+              {(user.role === "staff" ||
+                user.role === "admin" ||
+                user.role === "maintenance_officer") && (
                 <div className="space-y-2">
-                  <Label htmlFor="department" className="flex items-center gap-2"><Building className="h-4 w-4 text-muted-foreground" /> Department</Label>
-                  <Input 
-                    id="department" 
-                    value={formData.department} 
-                    onChange={e => setFormData({ ...formData, department: e.target.value })} 
+                  <Label htmlFor="department" className="flex items-center gap-2">
+                    <IonIcon name="business-outline" style={{ fontSize: "14px", color: "var(--muted-foreground)" }} />
+                    Department
+                  </Label>
+                  <Input
+                    id="department"
+                    value={formData.department}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   />
                 </div>
               )}
 
               {user.staffId && (
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2"><BadgeCheck className="h-4 w-4 text-muted-foreground" /> Staff ID</Label>
-                  <Input value={user.staffId} disabled className="bg-muted/50 cursor-not-allowed" />
+                  <Label className="flex items-center gap-2">
+                    <IonIcon name="shield-checkmark-outline" style={{ fontSize: "14px", color: "var(--muted-foreground)" }} />
+                    Staff ID
+                  </Label>
+                  <Input
+                    value={user.staffId}
+                    disabled
+                    className="bg-muted/50 cursor-not-allowed"
+                  />
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> Phone Number</Label>
-                <Input 
-                  id="phone" 
-                  value={formData.phone} 
-                  onChange={e => setFormData({ ...formData, phone: e.target.value })} 
+                <Label htmlFor="phone" className="flex items-center gap-2">
+                  <IonIcon name="call-outline" style={{ fontSize: "14px", color: "var(--muted-foreground)" }} />
+                  Phone Number
+                </Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 />
               </div>
-
             </CardContent>
             <CardFooter className="flex justify-end border-t border-border/50 px-6 py-4 bg-muted/20">
-              <Button type="submit" disabled={updateMutation.isPending || formData.name === ""} data-testid="button-save-profile">
-                {updateMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              <Button
+                type="submit"
+                disabled={updateMutation.isPending || formData.name === ""}
+                data-testid="button-save-profile"
+                className="gap-2"
+              >
+                {updateMutation.isPending ? <Spinner className="h-4 w-4" /> : null}
                 Save Changes
               </Button>
             </CardFooter>

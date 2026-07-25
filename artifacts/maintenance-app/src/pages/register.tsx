@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Loader2 } from "lucide-react";
+import { IonIcon } from "@/components/ui/ion-icon";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -45,8 +46,10 @@ export default function Register() {
     registerMutation.mutate({ data: formData });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   return (
@@ -56,8 +59,8 @@ export default function Register() {
 
       <Card className="w-full max-w-lg relative z-10 border-border/50 shadow-xl shadow-black/5">
         <CardHeader className="space-y-3 pb-6 text-center">
-          <div className="mx-auto w-12 h-12 bg-primary rounded-xl flex items-center justify-center mb-2 shadow-sm shadow-primary/20">
-            <FileText className="h-6 w-6 text-primary-foreground" />
+          <div className="mx-auto w-14 h-14 bg-primary rounded-2xl flex items-center justify-center mb-2 shadow-md shadow-primary/20">
+            <IonIcon name="construct-outline" style={{ fontSize: "28px", color: "white" }} />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">Create an account</CardTitle>
           <CardDescription className="text-muted-foreground">
@@ -69,23 +72,46 @@ export default function Register() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="name">Full Name</Label>
-                <Input id="name" name="name" placeholder="Jane Doe" value={formData.name} onChange={handleChange} required />
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="Jane Doe"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
               </div>
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="name@university.edu" value={formData.email} onChange={handleChange} required />
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="name@university.edu"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
               </div>
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" name="password" type="password" value={formData.password} onChange={handleChange} required minLength={6} />
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength={6}
+                />
               </div>
-              
+
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="role">I am a...</Label>
-                <select 
-                  id="role" 
-                  name="role" 
-                  value={formData.role} 
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
                   onChange={handleChange}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
@@ -100,23 +126,42 @@ export default function Register() {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="department">Department</Label>
-                    <Input id="department" name="department" value={formData.department} onChange={handleChange} />
+                    <Input
+                      id="department"
+                      name="department"
+                      value={formData.department}
+                      onChange={handleChange}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="staffId">Staff ID</Label>
-                    <Input id="staffId" name="staffId" value={formData.staffId} onChange={handleChange} />
+                    <Input
+                      id="staffId"
+                      name="staffId"
+                      value={formData.staffId}
+                      onChange={handleChange}
+                    />
                   </div>
                 </>
               )}
 
               <div className="space-y-2 col-span-2">
                 <Label htmlFor="phone">Phone Number (Optional)</Label>
-                <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} />
+                <Input
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-11 text-base mt-4" disabled={registerMutation.isPending}>
-              {registerMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : null}
+            <Button
+              type="submit"
+              className="w-full h-11 text-base mt-4 gap-2"
+              disabled={registerMutation.isPending}
+            >
+              {registerMutation.isPending ? <Spinner className="h-5 w-5" /> : null}
               Create Account
             </Button>
           </form>
@@ -125,7 +170,9 @@ export default function Register() {
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link href="/login">
-              <span className="text-primary font-medium hover:underline cursor-pointer">Sign in</span>
+              <span className="text-primary font-medium hover:underline cursor-pointer">
+                Sign in
+              </span>
             </Link>
           </p>
         </CardFooter>

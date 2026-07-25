@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, ArrowLeft, UploadCloud, X, Image as ImageIcon } from "lucide-react";
+import { IonIcon } from "@/components/ui/ion-icon";
+import { Spinner } from "@/components/ui/spinner";
 
 const API_BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -37,7 +38,11 @@ export default function RequestNew() {
     location: "",
   });
 
-  const [uploadedFile, setUploadedFile] = useState<{ name: string; url: string; preview: string | null } | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<{
+    name: string;
+    url: string;
+    preview: string | null;
+  } | null>(null);
   const [uploading, setUploading] = useState(false);
 
   const { data: categories, isLoading: loadingCategories } = useListCategories();
@@ -61,7 +66,6 @@ export default function RequestNew() {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const token = localStorage.getItem("token");
     setUploading(true);
     try {
@@ -70,7 +74,11 @@ export default function RequestNew() {
       const preview = isImage ? URL.createObjectURL(file) : null;
       setUploadedFile({ name: file.name, url, preview });
     } catch {
-      toast({ title: "Upload failed", description: "Could not upload the file. Try again.", variant: "destructive" });
+      toast({
+        title: "Upload failed",
+        description: "Could not upload the file. Try again.",
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
       e.target.value = "";
@@ -96,7 +104,9 @@ export default function RequestNew() {
     });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
@@ -104,14 +114,20 @@ export default function RequestNew() {
     <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">
       <Link
         href="/requests"
-        className={buttonVariants({ variant: "ghost", size: "sm", className: "-ml-4 text-muted-foreground hover:text-foreground" })}
+        className={buttonVariants({
+          variant: "ghost",
+          size: "sm",
+          className: "-ml-4 text-muted-foreground hover:text-foreground gap-2"
+        })}
       >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Requests
+        <IonIcon name="arrow-back-outline" style={{ fontSize: "16px" }} /> Back to Requests
       </Link>
 
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">Submit Maintenance Request</h1>
-        <p className="text-muted-foreground">Report an issue on campus. Please provide as much detail as possible.</p>
+        <p className="text-muted-foreground">
+          Report an issue on campus. Please provide as much detail as possible.
+        </p>
       </div>
 
       <Card className="border-border/50 shadow-sm">
@@ -217,15 +233,24 @@ export default function RequestNew() {
                     />
                   ) : (
                     <div className="h-20 w-20 rounded-md border border-border bg-muted flex items-center justify-center shrink-0">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                      <IonIcon
+                        name="image-outline"
+                        style={{ fontSize: "32px", color: "var(--muted-foreground)" }}
+                      />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{uploadedFile.name}</p>
                     <p className="text-xs text-muted-foreground mt-1">Uploaded successfully</p>
                   </div>
-                  <Button type="button" variant="ghost" size="icon" onClick={handleRemoveFile} className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive">
-                    <X className="h-4 w-4" />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleRemoveFile}
+                    className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <IonIcon name="close-outline" style={{ fontSize: "16px" }} />
                   </Button>
                 </div>
               ) : (
@@ -235,14 +260,19 @@ export default function RequestNew() {
                 >
                   {uploading ? (
                     <>
-                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <Spinner className="h-8 w-8 text-primary" />
                       <p className="text-sm text-muted-foreground">Uploading…</p>
                     </>
                   ) : (
                     <>
-                      <UploadCloud className="h-8 w-8 text-muted-foreground" />
+                      <IonIcon
+                        name="cloud-upload-outline"
+                        style={{ fontSize: "32px", color: "var(--muted-foreground)" }}
+                      />
                       <p className="text-sm font-medium">Click to upload image or PDF</p>
-                      <p className="text-xs text-muted-foreground">JPEG, PNG, GIF, WebP, PDF — max 10 MB</p>
+                      <p className="text-xs text-muted-foreground">
+                        JPEG, PNG, GIF, WebP, PDF — max 10 MB
+                      </p>
                     </>
                   )}
                   <input
@@ -259,11 +289,21 @@ export default function RequestNew() {
           </CardContent>
 
           <CardFooter className="flex justify-end border-t border-border/50 px-6 py-4 bg-muted/20">
-            <Link href="/requests" className={buttonVariants({ variant: "ghost", className: "mr-2" })}>
+            <Link
+              href="/requests"
+              className={buttonVariants({ variant: "ghost", className: "mr-2" })}
+            >
               Cancel
             </Link>
-            <Button type="submit" disabled={createMutation.isPending || loadingCategories || uploading} data-testid="button-submit">
-              {createMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            <Button
+              type="submit"
+              disabled={createMutation.isPending || loadingCategories || uploading}
+              data-testid="button-submit"
+              className="gap-2"
+            >
+              {createMutation.isPending ? (
+                <Spinner className="h-4 w-4" />
+              ) : null}
               Submit Request
             </Button>
           </CardFooter>
