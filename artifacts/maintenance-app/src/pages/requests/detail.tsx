@@ -11,7 +11,8 @@ import {
   useDeleteRequest,
   ServiceRequestDetailStatus,
   getGetRequestQueryKey,
-  getGetRequestLogsQueryKey
+  getGetRequestLogsQueryKey,
+  getListRequestsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -91,7 +92,11 @@ export default function RequestDetail() {
         toast({ title: "Officer assigned successfully" });
         setAssignOfficerId("");
         setAssignNote("");
+        // Invalidate detail, logs, and the list so the assignment
+        // is reflected everywhere without a manual refresh
         queryClient.invalidateQueries({ queryKey: getGetRequestQueryKey(id) });
+        queryClient.invalidateQueries({ queryKey: getGetRequestLogsQueryKey(id) });
+        queryClient.invalidateQueries({ queryKey: getListRequestsQueryKey() });
       },
       onError: (err) =>
         toast({ title: "Failed to assign", description: (err as any).data?.error, variant: "destructive" })

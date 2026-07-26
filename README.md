@@ -10,11 +10,12 @@ A full-stack web application for submitting, tracking, and managing campus maint
 2. [Getting Started](#getting-started)
 3. [Environment Variables](#environment-variables)
 4. [Running the App](#running-the-app)
-5. [Running Tests](#running-tests)
-6. [Building for Production](#building-for-production)
-7. [Project Structure](#project-structure)
-8. [User Roles](#user-roles)
-9. [API Overview](#api-overview)
+5. [API Documentation (Swagger)](#api-documentation-swagger)
+6. [Running Tests](#running-tests)
+7. [Building for Production](#building-for-production)
+8. [Project Structure](#project-structure)
+9. [User Roles](#user-roles)
+10. [API Overview](#api-overview)
 
 ---
 
@@ -47,29 +48,7 @@ pnpm install
 
 ### 3. Set up environment variables
 
-Copy the example below into a file called `.env` inside `artifacts/api-server/`:
-
-```bash
-cp artifacts/api-server/.env.example artifacts/api-server/.env
-```
-
-If `.env.example` does not exist, create `artifacts/api-server/.env` manually (see [Environment Variables](#environment-variables) below).
-
-### 4. Set up the database
-
-Run the migration to create all tables:
-
-```bash
-pnpm --filter @workspace/db db:push
-```
-
-This uses [Drizzle ORM](https://orm.drizzle.team) to apply the schema to your PostgreSQL database.
-
----
-
-## Environment Variables
-
-Create `artifacts/api-server/.env` with the following:
+Create `artifacts/api-server/.env` with the following content:
 
 ```env
 # PostgreSQL connection string
@@ -84,6 +63,20 @@ PORT=8080
 # Node environment
 NODE_ENV=development
 ```
+
+### 4. Set up the database
+
+Run the migration to create all tables:
+
+```bash
+pnpm --filter @workspace/db db:push
+```
+
+This uses [Drizzle ORM](https://orm.drizzle.team) to apply the schema to your PostgreSQL database.
+
+---
+
+## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
@@ -104,8 +97,7 @@ The app has two servers that must both be running:
 pnpm --filter @workspace/api-server run dev
 ```
 
-The API will be available at `http://localhost:8080/api`.  
-Interactive API docs (Swagger UI): `http://localhost:8080/api/docs`
+The API will be available at `http://localhost:8080/api`.
 
 ### Terminal 2 — Web App (frontend)
 
@@ -119,9 +111,37 @@ The app will be available at `http://localhost:5173` (or the next available port
 
 ---
 
+## API Documentation (Swagger)
+
+Interactive API documentation is served automatically when the API server is running.
+
+**Open in your browser:**
+
+```
+http://localhost:8080/api/docs
+```
+
+The Swagger UI lists every endpoint with full request/response schemas. You can authorise with a JWT token and test calls directly from the browser:
+
+1. Start the API server (`pnpm --filter @workspace/api-server run dev`)
+2. Navigate to `http://localhost:8080/api/docs`
+3. Click **Authorize** (top-right lock icon)
+4. Enter your JWT token in the format: `Bearer <token>`
+5. You can obtain a token by calling `POST /api/auth/login` from the Swagger UI itself or via the app login page
+
+The raw OpenAPI spec is also available as JSON at:
+
+```
+http://localhost:8080/api/openapi.json
+```
+
+---
+
 ## Running Tests
 
-### Run all tests
+No additional setup is required — tests run against a mock database and do not need a live PostgreSQL connection.
+
+### Run all tests (both packages)
 
 ```bash
 pnpm test
@@ -133,20 +153,31 @@ pnpm test
 pnpm --filter @workspace/api-server test
 ```
 
+Covers:
+- JWT auth middleware (`src/__tests__/auth.middleware.test.ts`) — 13 tests
+- Auth routes — register, login, logout, `/me` (`src/__tests__/auth.routes.test.ts`) — 17 tests
+- Request status and assignment permission rules (`src/__tests__/requests.routes.test.ts`) — 12 tests
+
 ### Frontend tests only
 
 ```bash
 pnpm --filter @workspace/maintenance-app test
 ```
 
-### Watch mode (re-runs on file save)
+Covers:
+- Utility functions — `cn`, `formatDate`, `formatDateTime`, `getInitials` (`src/__tests__/utils.test.ts`) — 16 tests
+- Badge components — `StatusBadge`, `PriorityBadge`, `RoleBadge` (`src/__tests__/badges.test.tsx`) — 21 tests
+- Shared UI components — `Spinner`, `IonIcon`, `EmptyState` (`src/__tests__/components.test.tsx`) — 16 tests
+
+### Watch mode (re-runs on every file save)
 
 ```bash
+# Frontend
 pnpm --filter @workspace/maintenance-app test -- --watch
+
+# Backend
 pnpm --filter @workspace/api-server test -- --watch
 ```
-
-Tests use [Vitest](https://vitest.dev). The backend suite uses a chainable mock database (no real DB connection needed). The frontend suite uses [React Testing Library](https://testing-library.com) with jsdom.
 
 ### Type checking
 
@@ -207,9 +238,9 @@ pnpm --filter @workspace/api-server run start
 | **Maintenance Officer** | View assigned requests, update status (in-progress → completed / rejected) |
 | **Admin** | All of the above + manage users, assign officers to requests, manage categories, view dashboard analytics |
 
-### Default accounts (after seeding)
+### Promoting a user to admin
 
-No seed script is included — register a new account via the `/register` page. The first admin account must be promoted directly in the database:
+Register a new account via the `/register` page, then run the following SQL directly on your database:
 
 ```sql
 UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
